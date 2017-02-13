@@ -46,7 +46,7 @@ function sendRequest(surl, handler, type) {
     // });
 
     $.ajax({
-        url: 'http://query.yahooapis.com/v1/public/yql',
+        url: 'https://query.yahooapis.com/v1/public/yql',
         dataType: 'jsonp',
         data: {
             q: "select * from html where url=\""+surl+"\"",
