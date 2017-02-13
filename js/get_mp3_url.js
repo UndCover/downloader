@@ -306,6 +306,9 @@ $(function () {
                         labelNode.addClass('table_cells_type_done');
                         titleBtn.removeClass("table_cells_clicked");
                         consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                    },function(XMLHttpRequest, textStatus, errorThrown){
+                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
+                        titleBtn.removeClass("table_cells_clicked");
                     });
                 }else{
                     sendRequest(url,function (data) {
@@ -318,6 +321,9 @@ $(function () {
                         labelNode.addClass('table_cells_type_done');
                         titleBtn.removeClass("table_cells_clicked");
                         consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                    },function(XMLHttpRequest, textStatus, errorThrown){
+                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
+                        titleBtn.removeClass("table_cells_clicked");
                     });
                 }
             }catch(error){
