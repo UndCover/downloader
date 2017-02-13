@@ -17,9 +17,11 @@ function parsemp3(original) {
 function sendRequest(surl,handler){
     sendRequest(surl,handler,'html');
 }
-
+function sendRequest(surl, handler, type){
+    sendRequest(surl,handler,errorHandler,type);
+}
 //public function
-function sendRequest(surl, handler, type) {
+function sendRequest(surl, handler, ehandler ,type) {
     // $.ajax({
     //     songlistUrl : songlistUrl,
     //     cache : false,
@@ -53,7 +55,7 @@ function sendRequest(surl, handler, type) {
             format: type
         },
         success: handler,
-        error: errorHandler,
+        error: ehandler,
     });
 
     // $.ajax({
@@ -307,9 +309,9 @@ $(function () {
                         titleBtn.removeClass("table_cells_clicked");
                         consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
                     },function(XMLHttpRequest, textStatus, errorThrown){
-                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
                         titleBtn.removeClass("table_cells_clicked");
-                    });
+                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
+                    },'html');
                 }else{
                     sendRequest(url,function (data) {
                         var result = data.results[0];
@@ -321,13 +323,13 @@ $(function () {
                         labelNode.addClass('table_cells_type_done');
                         titleBtn.removeClass("table_cells_clicked");
                         consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
-                    },function(XMLHttpRequest, textStatus, errorThrown){
-                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
+                    }function(XMLHttpRequest, textStatus, errorThrown){
                         titleBtn.removeClass("table_cells_clicked");
-                    });
+                        errorHandler(XMLHttpRequest, textStatus, errorThrown);
+                    },'html');
                 }
             }catch(error){
-                consoleInfo.text("获取地址出错，点击按钮重新获取地址");
+                consoleInfo.text("获取地址出错，点击按钮重新获取地址:>>> "+error);
                 titleBtn.removeClass("table_cells_clicked");
             }
             
