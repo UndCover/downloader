@@ -14,12 +14,8 @@ function parsemp3(original) {
     return realUrl;
 };
 
-function sendRequest(surl,handler){
-    sendRequest(surl,handler,'html');
-}
-
 //public function
-function sendRequest(surl, handler, type) {
+function sendRequest(url, handler) {
     // $.ajax({
     //     songlistUrl : songlistUrl,
     //     cache : false,
@@ -32,30 +28,13 @@ function sendRequest(surl, handler, type) {
     // });
 
     //ajax跨域通信
-    // $.ajax({
-    //     url: 'http://query.yahooapis.com/v1/public/yql',
-    //     dataType: 'jsonp',
-    //     data: {
-    //         q: "select * from html where url=\""+surl+"\"",
-    //         format: "json"
-    //     },
-    //     success: handler
-    //     // success: function (d) {
-    //     //    console.log(d.query.results.body)
-    //     // }
+    // $.ajaxPrefilter(function (options) {
+    //     if (options.crossDomain && jQuery.support.cors) {
+    //         var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
+    //         options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
+    //         //options.songlistUrl = "http://cors.corsproxy.io/url=" + options.songlistUrl;
+    //     }
     // });
-
-    $.ajax({
-        url: 'http://query.yahooapis.com/v1/public/yql',
-        dataType: 'jsonp',
-        data: {
-            q: "select * from html where url=\""+surl+"\"",
-            format: type
-        },
-        success: handler,
-        error: errorHandler,
-    });
-
     // $.ajax({
     //     songlistUrl: songlistUrl,
     //     data: data,
@@ -69,13 +48,14 @@ function sendRequest(surl, handler, type) {
     //         console.log(result);
     //     },
     // });
-    // $.ajax({
-    //     url: url,
-    //     success: handler,
-    //     error: errorHandler,
-    // });
+    $.ajax({
+        url: url,
+        dataType: 'JSONP',
+        success: handler,
+        error: errorHandler,
+    });
 
-    consoleInfo.text('SendRequest>>> '+surl);
+    consoleInfo.text('SendRequest>>> '+url);
 }
 
 function errorHandler(XMLHttpRequest, textStatus, errorThrown) {
@@ -87,13 +67,12 @@ function errorHandler(XMLHttpRequest, textStatus, errorThrown) {
 
 var songlistUrl , pagenum = 0;
 
-function songListHandler(data) {
-    var result = data.query.results.body;
+function songListHandler(result) {
     var json = $.parseJSON(result);
     if(json.length>0){
         genList(json);
         pagenum++;
-        sendRequest(songlistUrl+pagenum,songListHandler,'json');
+        sendRequest(songlistUrl+pagenum,songListHandler);
     }else{
         pagenum = 0;
         return;
@@ -101,8 +80,8 @@ function songListHandler(data) {
 }
 
 function getUserid(link) {  //获取用户id，queryid
-    sendRequest(link,function (data) {
-        var result = data.results[0];
+    sendRequest(link,function (result) {
+        console.log(result);
         queryId = queryUserId(result);
         if(queryId==0){
             consoleInfo.text("用户ID出错，请输入一个正确的歌曲地址");
@@ -116,7 +95,7 @@ function getUserid(link) {  //获取用户id，queryid
 //请求列表
 function getSongList(userid) {
     songlistUrl = baseurl + '&userid=' + userid + '&pageNum=';
-    sendRequest(songlistUrl+pagenum,songListHandler,'json');
+    sendRequest(songlistUrl+pagenum,songListHandler);
 }
 //生成列表
 function genList(json) {
@@ -191,19 +170,24 @@ function queryUserName(content) {
     var pattern2pc = /<em class="name twemoji">([^\/S]*)<\/em>/;
     var pattern2phone = /<div class="suggest-song-name text-nowrap">([^\/S]*)<\/div>([^\/S]*)<\/div>/;
     var userName;
-    if(platform == 0){  //移动平台
-        var fragStr = content.match(pattern2phone);
-        userName = $.trim(fragStr[2]);
-        if(!userName){  //离线平台
-            fragStr = content.match(pattern2pc);
+    try{
+        if(platform == 0){  //移动平台
+            var fragStr = content.match(pattern2phone);
+            userName = $.trim(fragStr[2]);
+            // if(!userName){  //离线平台
+            //     fragStr = content.match(pattern2pc);
+            //     userName = fragStr[1];
+            // }
+            console.log(userName);
+        }else{  //PC平台
+            var fragStr = content.match(pattern2pc);
             userName = fragStr[1];
+            console.log(userName);
         }
-        console.log(userName);
-    }else{  //PC平台
-        var fragStr = content.match(pattern2pc);
-        userName = fragStr[1];
-        console.log(userName);
+    }catch(error){
+        consoleInfo.text('解析用户ID出错:>>> '+error);
     }
+    
     if(!userName){
         return;
     }
@@ -294,8 +278,7 @@ $(function () {
             }
 
             if($(this).hasClass("table_cells_mp3")){
-                sendRequest(url,function (data) {
-                    var result = data.results[0];
+                sendRequest(url,function (result) {
                     var realUrl =  queryMp3Url(result);
                     // var trNode = $(this).parents('.trows');
                     // var labelNode = trNode.find('.table_cells_type');
@@ -306,8 +289,7 @@ $(function () {
                     consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
                 });
             }else{
-                sendRequest(url,function (data) {
-                    var result = data.results[0];
+                sendRequest(url,function (result) {
                     var realUrl =  queryMp4Url(result);
                     // var trNode = $(this).parents('.trows');
                     // var labelNode = trNode.find('.table_cells_type');
@@ -346,7 +328,6 @@ $(function () {
     }
 });
 
-//unuse
 function regClick() {//注册点击事件
     $(".table_cells_mp3").on('click', function () {
         console.log("mp3_click");
