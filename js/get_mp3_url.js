@@ -351,6 +351,8 @@ $(function () {
     } else {
         platform = 0;
     }
+
+    platform = 1;   //强制切换到pc平台
 });
 
 //unuse
