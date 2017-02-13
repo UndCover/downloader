@@ -90,6 +90,7 @@ function sendRequestCallback(surl, handler, ehandler,type) {
         success: handler,
         error: ehandler
     });
+    consoleInfo.text('SendRequest>>> '+surl);
 }
 
 function errorHandler(XMLHttpRequest, textStatus, errorThrown) {
