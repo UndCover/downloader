@@ -292,32 +292,37 @@ $(function () {
                 titleBtn.removeClass("table_cells_clicked");
                 return;
             }
-
-            if($(this).hasClass("table_cells_mp3")){
-                sendRequest(url,function (data) {
-                    var result = data.results[0];
-                    var realUrl =  queryMp3Url(result);
-                    // var trNode = $(this).parents('.trows');
-                    // var labelNode = trNode.find('.table_cells_type');
-                    labelNode.text('MP3 下载');
-                    labelNode.attr('href',realUrl);
-                    labelNode.addClass('table_cells_type_done');
-                    titleBtn.removeClass("table_cells_clicked");
-                    consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
-                });
-            }else{
-                sendRequest(url,function (data) {
-                    var result = data.results[0];
-                    var realUrl =  queryMp4Url(result);
-                    // var trNode = $(this).parents('.trows');
-                    // var labelNode = trNode.find('.table_cells_type');
-                    labelNode.text('MV 下载');
-                    labelNode.attr('href',realUrl);
-                    labelNode.addClass('table_cells_type_done');
-                    titleBtn.removeClass("table_cells_clicked");
-                    consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
-                });
+            try{
+                if($(this).hasClass("table_cells_mp3")){
+                    sendRequest(url,function (data) {
+                        var result = data.results[0];
+                        var realUrl =  queryMp3Url(result);
+                        // var trNode = $(this).parents('.trows');
+                        // var labelNode = trNode.find('.table_cells_type');
+                        labelNode.text('MP3 下载');
+                        labelNode.attr('href',realUrl);
+                        labelNode.addClass('table_cells_type_done');
+                        titleBtn.removeClass("table_cells_clicked");
+                        consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                    });
+                }else{
+                    sendRequest(url,function (data) {
+                        var result = data.results[0];
+                        var realUrl =  queryMp4Url(result);
+                        // var trNode = $(this).parents('.trows');
+                        // var labelNode = trNode.find('.table_cells_type');
+                        labelNode.text('MV 下载');
+                        labelNode.attr('href',realUrl);
+                        labelNode.addClass('table_cells_type_done');
+                        titleBtn.removeClass("table_cells_clicked");
+                        consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                    });
+                }
+            }catch(error){
+                consoleInfo.text("获取地址出错，点击按钮重新获取地址");
+                titleBtn.removeClass("table_cells_clicked");
             }
+            
         }else{
             console.log("table_cells_type>>> "+$(this).attr('id'));
             consoleInfo.text("table_cells_type>>> "+$(this).attr('id'));
