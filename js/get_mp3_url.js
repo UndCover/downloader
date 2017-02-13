@@ -17,11 +17,9 @@ function parsemp3(original) {
 function sendRequest(surl,handler){
     sendRequest(surl,handler,'html');
 }
-function sendRequest(surl, handler, type){
-    sendRequest(surl,handler,errorHandler,type);
-}
+
 //public function
-function sendRequest(surl, handler, ehandler ,type) {
+function sendRequest(surl, handler, type) {
     // $.ajax({
     //     songlistUrl : songlistUrl,
     //     cache : false,
@@ -55,7 +53,7 @@ function sendRequest(surl, handler, ehandler ,type) {
             format: type
         },
         success: handler,
-        error: ehandler,
+        error: errorHandler,
     });
 
     // $.ajax({
@@ -78,6 +76,20 @@ function sendRequest(surl, handler, ehandler ,type) {
     // });
 
     consoleInfo.text('SendRequest>>> '+surl);
+}
+
+// 为了处理 maximum call stack size exceeded 错误
+function sendRequestCallback(surl, handler, ehandler,type) {
+    $.ajax({
+        url: 'https://query.yahooapis.com/v1/public/yql',
+        dataType: 'jsonp',
+        data: {
+            q: "select * from html where url=\""+surl+"\"",
+            format: type
+        },
+        success: handler,
+        error: ehandler
+    });
 }
 
 function errorHandler(XMLHttpRequest, textStatus, errorThrown) {
@@ -221,15 +233,19 @@ function queryMp3Url(content) {
     //todo 正则表达式
     // http://qiniuuwmp3.changba.com/667079320.mp3
     var pattern = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?.mp3/;
-    var fragStr = content.match(pattern);   //正则匹配到MP3 地址
+    var realUrl;
+    try{
+        var fragStr = content.match(pattern);   //正则匹配到MP3 地址
 
-    // console.log(fragStr);
+        var urlStr = fragStr[0];
 
-    var urlStr = fragStr[0];
-
-    var realUrl = parsemp3(urlStr);         //解析MP3地址
-
+        realUrl = parsemp3(urlStr);         //解析MP3地址    
+    }catch(error){
+        console.log("getMp3Url error ... "+error);
+        consoleInfo.text("获取mp3地址出错，请重新获取地址... "+error);
+    }
     console.log(realUrl);
+
     return realUrl;
 }
 function queryMp4Url(content) {
@@ -240,24 +256,28 @@ function queryMp4Url(content) {
     var pattern2pc = /jwplayer.utils.qn\s+=\s+'([a-zA-z0-9=]*)'/;
     var pattern2phone = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?.mp4/;
     var realUrl;
-    if(platform == 0){  //移动平台
-        var fragStr = content.match(pattern2phone);
-        realUrl = fragStr[0];
-        console.log(realUrl);
-    }else{  //PC平台
 
-        var fragStr = content.match(pattern2pc);
-        // 'aHR0cDovL2xldHYuY2RuLmNoYW5nYmEuY29tL3VzZXJkYXRhL3ZpZGVvLzYzNjk3Njc2MS5tcDQ='
-        // var pattern2 = /'([\d\D]*)'/;
+    try{
+        if(platform == 0){  //移动平台
+            var fragStr = content.match(pattern2phone);
+            realUrl = fragStr[0];
+        }else{  //PC平台
 
-        // var str = "content:>>> "+content+" \nfragStr:>>> "+fragStr;
-        // consoleInfo.text(str);
+            var fragStr = content.match(pattern2pc);
+            // 'aHR0cDovL2xldHYuY2RuLmNoYW5nYmEuY29tL3VzZXJkYXRhL3ZpZGVvLzYzNjk3Njc2MS5tcDQ='
+            // var pattern2 = /'([\d\D]*)'/;
 
-        var urlStr = fragStr[1];
-        var realUrl = o(urlStr);                 //base64解析mp4地址
-        console.log(realUrl);
+            // var str = "content:>>> "+content+" \nfragStr:>>> "+fragStr;
+            // consoleInfo.text(str);
+
+            var urlStr = fragStr[1];
+            var realUrl = o(urlStr);                 //base64解析mp4地址
+        }
+    }catch(error){
+        console.log("getMp4Url error ... "+error);
+        consoleInfo.text("获取MV地址出错，请重新获取地址... "+error);
     }
-
+    console.log(realUrl);
     return realUrl;
 }
 
@@ -298,32 +318,38 @@ $(function () {
             }
             try{
                 if($(this).hasClass("table_cells_mp3")){
-                    sendRequest(url,function (data) {
+                    // sendRequest
+                    sendRequestCallback(url,function (data) {
                         var result = data.results[0];
                         var realUrl =  queryMp3Url(result);
                         // var trNode = $(this).parents('.trows');
                         // var labelNode = trNode.find('.table_cells_type');
-                        labelNode.text('MP3 下载');
-                        labelNode.attr('href',realUrl);
-                        labelNode.addClass('table_cells_type_done');
+                        if(realUrl){
+                            labelNode.text('MP3 下载');
+                            labelNode.attr('href',realUrl);
+                            labelNode.addClass('table_cells_type_done');
+                            consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                        } 
                         titleBtn.removeClass("table_cells_clicked");
-                        consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
                     },function(XMLHttpRequest, textStatus, errorThrown){
                         titleBtn.removeClass("table_cells_clicked");
                         errorHandler(XMLHttpRequest, textStatus, errorThrown);
                     },'html');
+
                 }else{
-                    sendRequest(url,function (data) {
+                    sendRequestCallback(url,function (data) {
                         var result = data.results[0];
                         var realUrl =  queryMp4Url(result);
                         // var trNode = $(this).parents('.trows');
                         // var labelNode = trNode.find('.table_cells_type');
-                        labelNode.text('MV 下载');
-                        labelNode.attr('href',realUrl);
-                        labelNode.addClass('table_cells_type_done');
+                        if(realUrl){
+                            labelNode.text('MV 下载');
+                            labelNode.attr('href',realUrl);
+                            labelNode.addClass('table_cells_type_done');
+                            consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
+                        }
                         titleBtn.removeClass("table_cells_clicked");
-                        consoleInfo.text("已经生成链接，请点击下载>>> "+realUrl);
-                    }function(XMLHttpRequest, textStatus, errorThrown){
+                    },function(XMLHttpRequest, textStatus, errorThrown){
                         titleBtn.removeClass("table_cells_clicked");
                         errorHandler(XMLHttpRequest, textStatus, errorThrown);
                     },'html');
