@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>Downloaders</title>
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+        }
+        .container{
+            margin:0 auto;
+            width: 100%;
+            height: 100%;
+        }
+        .body_top{
+            background-color: snow;
+            width:100%;
+            height:100%;
+            margin:0 auto;
+            position:fixed;
+            top:0;
+            text-align: center;
+        }
+        .abtn{
+            margin:10px 10px;
+            background-color: green;
+            display: block;
+            width: auto;
+            height: auto;
+            border: 1px solid aqua;
+            border-radius: 3px;
+            padding: 10px 0;
+            font-size: 16px;
+            text-decoration: blink;
+            background-color: #32b3ea;
+            font-size: 22px;
+            color: white;
+        }
+    </style>
+</head>
+<body ontouchstart>
+
+    <div class="container">
+        <div class="body_top">
+            <a class="abtn" href="changba.html">唱吧</a>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+             //注册点击事件
+             $(".btn_sendrequest").on('click', function () {
+                 var userid = $(".input_id").val();
+                 getUserid(userid);
+                 console.log(userid);
+             });
+         });
+
+    </script>
+</body>
+</html>
