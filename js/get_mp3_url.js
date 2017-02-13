@@ -191,22 +191,24 @@ function queryUserName(content) {
     var pattern2pc = /<em class="name twemoji">([^\/S]*)<\/em>/;
     var pattern2phone = /<div class="suggest-song-name text-nowrap">([^\/S]*)<\/div>([^\/S]*)<\/div>/;
     var userName;
-    if(platform == 0){  //移动平台
-        var fragStr = content.match(pattern2phone);
-        userName = $.trim(fragStr[2]);
-        if(!userName){  //离线平台
-            fragStr = content.match(pattern2pc);
+    try{
+        if(platform == 0){  //移动平台
+            var fragStr = content.match(pattern2phone);
+            userName = $.trim(fragStr[2]);
+            // if(!userName){  //离线平台
+            //     fragStr = content.match(pattern2pc);
+            //     userName = fragStr[1];
+            // }
+            console.log(userName);
+        }else{  //PC平台
+            var fragStr = content.match(pattern2pc);
             userName = fragStr[1];
+            console.log(userName);
         }
-        console.log(userName);
-    }else{  //PC平台
-        var fragStr = content.match(pattern2pc);
-        userName = fragStr[1];
-        console.log(userName);
+    }catch(error){
+        consoleInfo.text('解析用户ID出错:>>> '+error);
     }
-    if(!userName){
-        return;
-    }
+    
     $(".btn_sendrequest").addClass("btn_clicked").text(userName);
     return userName;
 }
